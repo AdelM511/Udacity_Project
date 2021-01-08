@@ -1,0 +1,124 @@
+---
+title: "R Project"
+author: "Adel"
+date: "12/19/2020"
+output: html_document
+---
+Download nessary packages/libraries
+```{r message=FALSE, warning=FALSE}
+library("ggplot2")
+library("ggthemes")
+library("dplyr")
+```
+Download all data sets of the three cities.
+
+```{r}
+ny = read.csv('C:\\Users\\adela\\OneDrive\\Documents\\R DIr\\new-york-city.csv')
+chi = read.csv('C:\\Users\\adela\\OneDrive\\Documents\\R DIr\\chicago.csv')
+wash = read.csv('C:\\Users\\adela\\OneDrive\\Documents\\R DIr\\washington.csv')
+```
+Exploring data for each data set
+```{r}
+head(ny)
+head(chi)
+head(wash)
+```
+Q1: Does Gender influence the type of rider in New York?
+
+
+
+
+Running a descriptive summary to understanding the data
+```{r}
+summary(ny)
+```
+The summary showed that both Gender and User Type  have blank cells which seem to be missing values.Ploting User type by Gender in New York using barcharts:
+```{r}
+ggplot(data= ny, aes(x= Gender, fill = User.Type))+geom_bar(position = 'stack') + ylab('Number of riders')+ggtitle('Fig 1:User type by Gender in NY')
+
+```
+
+
+As the graph confirms our findings above with regards to variables of interest,
+Choice is made to consider the blank cells as NA's.
+
+```{r message=FALSE, warning=FALSE}
+ny$Gender[ny$Gender==""] <-NA
+ny$User.Type[ny$User.Type ==""] <-NA
+```
+Now , Let's plot gain the distribution of User type by gender without missing values (excluding NA's) to get a more clearer picture.
+```{r}
+ny %>%
+  filter(!is.na(Gender) & !is.na(User.Type)) %>%
+  ggplot(aes(x = Gender, fill = User.Type))+
+  geom_bar(position = "stack") + 
+  ylab('Number of riders') +
+  ggtitle("Fig 2: User type by Gender in NY without missing values")
+```
+
+
+Running a compute a summary table to represent the total counts of customers and suscribers according to their gender.
+```{r}
+ny2 <-ny %>%
+  filter(!is.na(Gender) & !is.na(User.Type))
+
+by( ny2$User.Type ,ny2$Gender , summary)
+```
+Performing a chi-square statistic test to establish wether Gender and user type are asociated?
+#H0: Gender and user type are independent
+#H1: Gender and usere type are related
+
+```{r}
+chisq.test(ny2$Gender, ny2$User.Type, correct =FALSE)
+```
+since the P-value is less than 0.05 , we can conclude that there is a relationship between Gender and User Type.
+
+
+
+Q2:What are the counts of each gender (only available for NYC and Chicago)?
+
+```{r message=FALSE}
+chi %>% group_by(Gender) %>% filter(!is.na(Gender))%>%
+  summarise(total = length(Gender))%>%
+  ggplot(aes(Gender, total)) + geom_bar(stat = 'identity')+
+  xlab("Gender") +  ylab("Count ")+ ggtitle("Counts of each gender in chicago")
+
+
+ny %>% group_by(Gender) %>% filter(!is.na(Gender))%>%
+  summarise(total = length(Gender))%>%
+  ggplot(aes(Gender, total)) + geom_bar(stat = 'identity')+
+  xlab("Gender") +  ylab("Count ")+ ggtitle("Counts of each gender in new york")
+```
+
+
+
+Females are lesser in number as compared to Males in chicago and newyork.observations where gender were NA were filtered out
+
+
+
+
+Q3:What is the gender wise median travel time for users in different cities ?
+
+```{r}
+summary(chi$Trip.Duration)
+```
+Median trip duration in chicago is 670.0 seconds and Mean trip duration is 936.2 seconds.
+
+```{r warning=FALSE}
+ggplot(data = subset(chi, !is.na(Gender)), aes("Gender",Trip.Duration, fill = Gender)) + geom_boxplot()+  
+  scale_y_continuous(limits = c(0,2000))+
+  xlab("Gender") +  ylab("Time in Seconds ")+ ggtitle("Trip duration in Chicago")
+```
+
+```{r}
+summary(ny$Trip.Duration)
+```
+
+Median trip duration in newyork is 609.0 seconds and Mean trip duration is 899.7 seconds.
+
+```{r warning=FALSE}
+
+ggplot(data = subset(ny, !is.na(Gender)), aes("Gender",Trip.Duration, fill = Gender)) + geom_boxplot()+  
+  scale_y_continuous(limits = c(0,2000))+
+  xlab("Gender") +  ylab("Time in Seconds ")+ ggtitle("Trip duration in NYC")
+```
