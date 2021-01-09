@@ -8,4 +8,8 @@ Created by : AdelM
 Project Title
 US Bike share
 
+Description
+Explor bikeshare data for three US cities using R software
+
+Thanks Udacity
 
